@@ -3,7 +3,7 @@
 ## Storage
 ### Ceph 总体架构
 #### Ceph架构图
-！[ceph architecture](assets/ceph_architecture.jpg)
+![ceph architecture](assets/ceph_architecture.jpg)
 基础存储系统RADOS（Reliable,Autonomic,Distributed Object Store）可靠的自主的分布式对象存储。
 这一层本身就是一个完整的对象存储系统，所有存储在Ceph系统中的用户数据事实上最终都是由这一层来存储的。RADOS由大量的存储设备节点组成，每个节点拥有自己的硬件资源(CPU、内存、硬盘、网络)，并运行着操作系统和文件系统。
 
@@ -20,7 +20,7 @@
 
 ### RADOS 的逻辑结构
 #### RADOS 的逻辑结构图
-！[rados architecture](assets/rados_architecture.png)
+![rados architecture](assets/rados_architecture.png)
 #### RADOS 节点组成
 RADOS集群主要由两种节点组成。一种是为数众多的、负责完成数据存储和维护功能的OSD(Object Storage Device),另一种则是若干个负责完成系统状态监测和维护的monitor。
 
@@ -31,7 +31,7 @@ OSD和monitor之间互相传输节点状态信息，共同得出系统的总体�
 在RADOS的运行过程中，cluster map的更新完全取决于系统的状态变化，而导致这一变化的常见时间只有两种：OSD出现故障、RADIOS规模扩大。
 
 #### RADOS 的分发策略
-！[rados crush](assets/rados_crush.png)
+![rados crush](assets/rados_crush.png)
 Ceph中的寻址至少要经历以下三次映射：
 
 * File -> object映射：其映射十分简单，本质上就是按照object的最大size对file进行切分，相当于RAID中的条带化过程。这种切分的好处有二：一是让大小不限的 file变成最大size一致、可以被RADOS高效管理的object；二是让对单一file实施的串行处理变为对多个object实施的并行化处理。
