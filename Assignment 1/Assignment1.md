@@ -1,6 +1,56 @@
 # Technical Report
 
 ## Storage
+### Ceph 总体架构
+#### Ceph架构图
+！[ceph architecture](assets/ceph_architecture.jpg)
+基础存储系统RADOS（Reliable,Autonomic,Distributed Object Store）可靠的自主的分布式对象存储。
+这一层本身就是一个完整的对象存储系统，所有存储在Ceph系统中的用户数据事实上最终都是由这一层来存储的。RADOS由大量的存储设备节点组成，每个节点拥有自己的硬件资源(CPU、内存、硬盘、网络)，并运行着操作系统和文件系统。
+
+#### 基础库librados
+这一层的功能是对RADOS进行抽象和封装，并向上层提供API，以便直接基于RADOS（而不是ceph）进行应用开发。物理上libradios和基于其上开发的应用位于同一台机器，因此也被成为本地API。应用调用本机上的libradios API，再由后者通过socket与RADIOS集群中的节点通信完成各种操作。
+
+#### 高层应用接口
+这一层包括了三个部分：RADOS GW(RADOS Gateway)、RBD(Reliable Block Device)、 Ceph FS(Ceph File System),其作用时在librados库的基础上提供抽象层次更高、更便于应用或客户端使用的上层接口。
+* RADOS GW是一个提供Amazon S3 和Swift 兼容的RESTful API 的gateway,以供相应的对象存储应用开发使用。RAIDS GW 提供的API抽象层次更高，但功能不如librados强大。因此，开发者应针对自己的需求选择使用。
+
+* RBD则提供了一个标准的块设备接口，常用于在虚拟化的场景下创建volume。
+
+* Ceph FS 是一个POSIX兼容的分布式文件系统。目前还处于开发状态。
+
+### RADOS 的逻辑结构
+#### RADOS 的逻辑结构图
+！[rados architecture](assets/rados_architecture.png)
+#### RADOS 节点组成
+RADOS集群主要由两种节点组成。一种是为数众多的、负责完成数据存储和维护功能的OSD(Object Storage Device),另一种则是若干个负责完成系统状态监测和维护的monitor。
+
+OSD和monitor之间互相传输节点状态信息，共同得出系统的总体工作状态，并形成一个全局系统状态记录数据结构，即cluster map。这个数据结构与RADOS提供的特定算法相配合，以便实现了Ceph”无须查表，算算就好”的核心机制以及若干优秀特性。
+
+在使用RADOS系统时，大量的客户端程序通过OSD或者monitor的交互获取cluster map,然后直接在本地进行计算，得出对象的存储位置后，便直接与对应的OSD通信，完成数据的各种操作。
+
+在RADOS的运行过程中，cluster map的更新完全取决于系统的状态变化，而导致这一变化的常见时间只有两种：OSD出现故障、RADIOS规模扩大。
+
+#### RADOS 的分发策略
+！[rados crush](assets/rados_crush.png)
+Ceph中的寻址至少要经历以下三次映射：
+
+* File -> object映射：其映射十分简单，本质上就是按照object的最大size对file进行切分，相当于RAID中的条带化过程。这种切分的好处有二：一是让大小不限的 file变成最大size一致、可以被RADOS高效管理的object；二是让对单一file实施的串行处理变为对多个object实施的并行化处理。
+
+* Object -> PG映射：在file被映射为一个或多个object之后，就需要将每个object独立地映射到一个PG中去。
+
+* PG -> OSD映射：第三次映射就是将作为object的逻辑组织单元的PG映射到数据的实际存储单元OSD。
+
+### Ceph 的缺陷
+* 开源系统，不是产品，后期运维成本高；
+
+* 系统复杂，性能不高，优化难度和成本高；
+
+* 部署配置优化复杂，对运维能力要求非常高；
+
+* 系统成熟度不够，生产环境具有一定的风险；
+
+
+
 
 ## Network
 ### IPv4 & IPv6
