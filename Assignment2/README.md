@@ -20,7 +20,7 @@ Use command docker images to check whether the two images have been installed
 
 2. start kafka
 
-```
+```docker
 docker run  -d --name kafka \
 -p 9092:9092 \
 -e KAFKA_BROKER_ID=0 \ 
@@ -30,7 +30,7 @@ docker run  -d --name kafka \
 ```
 
 four parameters
-```
+```docker
 KAFKA_BROKER_ID=0               
 KAFKA_ZOOKEEPER_CONNECT=192.168.204.128:2181
 KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.204.128:9092
@@ -97,7 +97,7 @@ Kafka Streams is a library for building streaming applications, specifically app
 ### Demo
 
 A stream processing application built with Kafka Streams looks like this:
-```
+```java
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
